@@ -5,6 +5,8 @@
 #include "Eigen-3.3/Eigen/Core"
 
 using namespace std;
+using namespace Eigen;
+
 
 class MPC {
  public:
