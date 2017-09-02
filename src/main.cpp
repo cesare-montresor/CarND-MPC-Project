@@ -94,7 +94,7 @@ int main() {
         auto j = json::parse(s);
         string event = j[0].get<string>();
         if (event == "telemetry") {
-          //cout<<"vars: \n"<<j[1]<<"\n";
+          cout<<"vars: \n"<<j[1]<<"\n";
           // j[1] is the data JSON object
           vector<double> ptsx = j[1]["ptsx"];
           vector<double> ptsy = j[1]["ptsy"];
@@ -102,8 +102,17 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
+          double steering_angle = j[1]["steering_angle"];
+          double throttle = j[1]["throttle"]; // not quite accelleration but better than nothing...
           
-          //v*=mph2mps;
+          v*=mph2mps;
+          
+          px  += v * latency_s* cos(psi);
+          py  += v * latency_s * sin(psi);
+          psi += -1 * v * latency_s * (steering_angle/Lf);
+          //v   += throttle * latency_s;
+          
+          v/=mph2mps;
           
           //Map to Vehicle
           const unsigned point_num = ptsx.size();
@@ -118,16 +127,15 @@ int main() {
           }
           
           // Polyfit
-          VectorXd coeff = polyfit(xvals, yvals, 3);
+          VectorXd coeff = polyfit(xvals, yvals, 4);
           VectorXd coeff_d1 = VectorXd(coeff.size()-1);
           for(int i = 1;i<coeff.size();i++){
             coeff_d1[i-1] = coeff[i] * i;
           }
           
           // add
-          double x = 0; // put X in the "future"
-          double cte =  polyeval(coeff, x ); // fit for x = 0 ^_^
-          double epsi = -std::atan( polyeval(coeff_d1, x) ); // fit first derivate for x = 0
+          double cte =  polyeval(coeff, px ); // fit for x = 0 ^_^
+          double epsi = -std::atan( polyeval(coeff_d1, px) ); // fit first derivate for x = 0
           
           VectorXd state = VectorXd(6);
           state << 0,0,0,v,cte,epsi;
@@ -175,7 +183,7 @@ int main() {
 
           //cout<<"Almost there!";
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-          std::cout << msg << std::endl;
+          //std::cout << msg << std::endl;
           
           // Latency
           // The purpose is to mimic real driving conditions where

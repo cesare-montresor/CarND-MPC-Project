@@ -12,10 +12,10 @@
 
 
 const size_t N = 10;
-const double dt = 0.1;
+const double dt = 0.15;
 
 const unsigned latency_ms = 100;
-const double ref_velocity = 40;
+const double ref_velocity = 100;
 const double Lf = 2.67;
 
 const double mph2mps = 0.44704; // Google says

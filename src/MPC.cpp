@@ -36,21 +36,21 @@ class FG_eval {
       
       // The part of the cost based on the reference state.
       for (int t = 0; t < N; t++) {
-        fg[0] += 2000*CppAD::pow(vars[cte_start + t], 2);
-        fg[0] += 2000*CppAD::pow(vars[epsi_start + t], 2);
+        fg[0] += 3000*CppAD::pow(vars[cte_start + t], 2);
+        fg[0] += 3000*CppAD::pow(vars[epsi_start + t], 2);
         fg[0] += CppAD::pow(vars[v_start + t] - ref_velocity, 2);
       }
       
       // Minimize the use of actuators.
       for (int t = 0; t < N - 1; t++) {
-        fg[0] += 5*CppAD::pow(vars[delta_start + t], 2);
-        fg[0] += 5*CppAD::pow(vars[acc_start + t], 2);
+        fg[0] += 10*CppAD::pow(vars[delta_start + t], 2);
+        fg[0] += CppAD::pow(vars[acc_start + t], 2);
       }
       
       // Minimize the value gap between sequential actuations.
       for (int t = 0; t < N - 2; t++) {
         fg[0] += 200 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-        fg[0] += 10*CppAD::pow(vars[acc_start + t + 1] - vars[acc_start + t], 2);
+        fg[0] += CppAD::pow(vars[acc_start + t + 1] - vars[acc_start + t], 2);
       }
       
       
@@ -94,8 +94,18 @@ class FG_eval {
         AD<double> acc0 = vars[acc_start + t];
         
         // Kinematic model
-        AD<double> f = coeffs[0] + coeffs[1] * x0 + coeffs[2] * CppAD::pow(x0, 2) + coeffs[3] * CppAD::pow(x0, 3);
-        AD<double> psi = CppAD::atan( coeffs[1] + 2 * coeffs[2] * x0 + 3 * coeffs[3] * CppAD::pow(x0, 2) );
+        AD<double> f =
+          coeffs[0] +
+          coeffs[1] * x0 +
+          coeffs[2] * CppAD::pow(x0, 2) +
+          coeffs[3] * CppAD::pow(x0, 3) +
+          coeffs[4] * CppAD::pow(x0, 4);
+        AD<double> psi = CppAD::atan(
+            coeffs[1] +
+            2 * coeffs[2] * x0 +
+            3 * coeffs[3] * CppAD::pow(x0, 2) +
+            4 * coeffs[4] * CppAD::pow(x0, 3)
+        );
         fg[2 + t + x_start]     = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
         fg[2 + t + y_start]     = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
         fg[2 + t + psi_start]   = psi1 - (psi0 + v0 * delta0 / Lf * dt);
