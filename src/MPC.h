@@ -3,6 +3,8 @@
 
 #include <vector>
 #include "Eigen-3.3/Eigen/Core"
+#include "constants.h"
+
 
 using namespace std;
 using namespace Eigen;
@@ -11,7 +13,7 @@ using namespace Eigen;
 class MPC {
  public:
   MPC();
-
+  string options;
   virtual ~MPC();
 
   // Solve the model given an initial state and polynomial coefficients.

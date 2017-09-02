@@ -6,12 +6,6 @@
 using CppAD::AD;
 
 
-// TODO: Set the timestep length and duration
-size_t N = 10;
-double dt = 0.1;
-
-
-
 // position in the var in the array for the optimizer
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -22,17 +16,9 @@ size_t epsi_start = cte_start + N;
 size_t delta_start = epsi_start + N;
 size_t acc_start = delta_start + N - 1;
 
-
-
-
 class FG_eval {
-  
-  
 
   public:
-    const double ref_velocity = 40;
-    
-    const double Lf = 2.67;
     // Fitted polynomial coefficients
     VectorXd coeffs;
     FG_eval(VectorXd coeffs) { this->coeffs = coeffs; }
@@ -126,7 +112,28 @@ class FG_eval {
 //
 // MPC class definition implementation.
 //
-MPC::MPC() {}
+MPC::MPC() {
+  
+  
+  // NOTE: You don't have to worry about these options
+  //
+  // options for IPOPT solver
+  
+  // Uncomment this if you'd like more print information
+  options += "Integer print_level  0\n";
+  // NOTE: Setting sparse to true allows the solver to take advantage
+  // of sparse routines, this makes the computation MUCH FASTER. If you
+  // can uncomment 1 of these and see if it makes a difference or not but
+  // if you uncomment both the computation time should go up in orders of
+  // magnitude.
+  options += "Sparse  true        forward\n";
+  options += "Sparse  true        reverse\n";
+  // NOTE: Currently the solver has a maximum time limit of 0.5 seconds.
+  // Change this as you see fit.
+  options += "Numeric max_cpu_time          0.5\n";
+
+
+}
 MPC::~MPC() {}
 
 vector<double> MPC::Solve(VectorXd state, VectorXd coeffs) {
@@ -182,8 +189,8 @@ vector<double> MPC::Solve(VectorXd state, VectorXd coeffs) {
   // degrees (values in radians).
   // NOTE: Feel free to change this to something else.
   for (int i = delta_start; i < acc_start; i++) {
-    vars_lowerbound[i] = -0.436332; //*fg_eval.Lf;
-    vars_upperbound[i] = 0.436332; //*fg_eval.Lf;
+    vars_lowerbound[i] = -0.436332; //Lf;
+    vars_upperbound[i] = 0.436332; //Lf;
   }
   
   // Acceleration/decceleration upper and lower limits.
@@ -218,24 +225,6 @@ vector<double> MPC::Solve(VectorXd state, VectorXd coeffs) {
   
   
   
-  
-  // NOTE: You don't have to worry about these options
-  //
-  // options for IPOPT solver
-  string options;
-  // Uncomment this if you'd like more print information
-  options += "Integer print_level  0\n";
-  // NOTE: Setting sparse to true allows the solver to take advantage
-  // of sparse routines, this makes the computation MUCH FASTER. If you
-  // can uncomment 1 of these and see if it makes a difference or not but
-  // if you uncomment both the computation time should go up in orders of
-  // magnitude.
-  options += "Sparse  true        forward\n";
-  options += "Sparse  true        reverse\n";
-  // NOTE: Currently the solver has a maximum time limit of 0.5 seconds.
-  // Change this as you see fit.
-  options += "Numeric max_cpu_time          0.5\n";
-
   
   // place to return solution
   CppAD::ipopt::solve_result<Dvector> solution;

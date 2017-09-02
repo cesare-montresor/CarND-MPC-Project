@@ -15,6 +15,7 @@
 		03E9C60386AB4C90B7A90142 /* MPCController */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = MPCController; sourceTree = BUILT_PRODUCTS_DIR; };
 		05B94455C3184D0CBEBC1DDE /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = main.cpp; path = src/main.cpp; sourceTree = SOURCE_ROOT; };
 		8124868A288644A6851F1969 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		D371B5991F5AAE84005F1E97 /* constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = constants.h; path = src/constants.h; sourceTree = "<group>"; };
 		D3AC27D91F51DB9A00B02373 /* MPC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MPC.cpp; path = src/MPC.cpp; sourceTree = "<group>"; };
 		D3AC27DA1F51DB9A00B02373 /* MPC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPC.h; path = src/MPC.h; sourceTree = "<group>"; };
 		D3E9D4BE1EF0FFD0004F6248 /* json.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = json.hpp; path = src/json.hpp; sourceTree = "<group>"; };
@@ -43,6 +44,7 @@
 		C8DE8CFB24EC4A39B8750AD4 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				D371B5991F5AAE84005F1E97 /* constants.h */,
 				D3AC27D91F51DB9A00B02373 /* MPC.cpp */,
 				D3AC27DA1F51DB9A00B02373 /* MPC.h */,
 				05B94455C3184D0CBEBC1DDE /* main.cpp */,
