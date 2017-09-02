@@ -106,10 +106,10 @@ int main() {
           double throttle = j[1]["throttle"]; // not quite accelleration but better than nothing...
           
           v*=mph2mps;
-          
-          px  += v * latency_s* cos(psi);
-          py  += v * latency_s * sin(psi);
-          psi += -1 * v * latency_s * (steering_angle/Lf);
+          double latency = latency_s * 4;
+          px  += v * latency* cos(psi);
+          py  += v * latency * sin(psi);
+          psi += -1 * v * latency * (steering_angle/Lf);
           //v   += throttle * latency_s;
           
           v/=mph2mps;
