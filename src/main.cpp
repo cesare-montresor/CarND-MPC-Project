@@ -142,10 +142,9 @@ int main() {
           py  = lat_m * sin(psi);
           psi = (lat_m/Lf) * -steering_angle;
           
-          
           double epsi = epsi0 + psi;
           double cte= cte0 + lat_m*sin(epsi);
-          v = v + throttle*latency;
+          v = v + throttle*latency; //throttle != acceleration but probably better than constant velocity
           
           
           VectorXd state = VectorXd(6);
