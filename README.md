@@ -54,23 +54,22 @@ A 3th order polinomial have been chosen to fit the waypoints, as a lower order f
 
 # Latency correction
 
-The same model equation have been applied to the variables in car coordinates (px, py, psi = 0):
+The same model equation have been applied to the variables in car coordinates (px, py, psi = 0), using the equations coming from the kinematic model, cte and epsi have been computed taking into account the latency.
 ```
 const double v_ms = v*mph2mps;
 const double latency = latency_s; // push it more in the future
 const double lat_m = v_ms * latency; // meters offset for given latency
+
+double cte0 =  coeff[0]; // fit first derivate for x = 0
+double epsi0 = -std::atan( coeff_d1[0] ); // fit first derivate for x = 0
+
 px  = lat_m* cos(psi);
 py  = lat_m * sin(psi);
 psi = (lat_m/Lf) * -steering_angle;
-```
+double epsi = epsi0 + psi;
+double cte = cte0 + lat_m*sin(epsi);
+v = v + throttle*latency; //throttle != acceleration but probably better than constant velocity
 
-Using the equations coming from the cinematic model, cte and epsi have been computed taking into account the speed and latency. I've decided to assume contant velocity as the throttle is not representative of the acceleration, not in the simulator, and even less in real life condition.
-```
-double cte0 =  coeff[0];
-double epsi0 = psi-std::atan( coeff_d1[0] ); // fit first derivate for x = 0
-
-double cte = cte0 + lat_m * sin(epsi0);
-double epsi = epsi0 + (lat_m/Lf) * -steering_angle;
 ```
 ## State
 Using variables accounting the latency I've then assembled the state vector and passed it to the solver.
