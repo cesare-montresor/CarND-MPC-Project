@@ -103,16 +103,19 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
           double steering_angle = j[1]["steering_angle"];
-          double throttle = j[1]["throttle"]; // not quite accelleration but better than nothing...
+          //double throttle = j[1]["throttle"]; // not quite accelleration but better than nothing...
           
-          v*=mph2mps;
+          double v_ms = v*mph2mps;
           double latency = latency_s * 2; // push it more in the future
-          px  += v * latency* cos(psi);
-          py  += v * latency * sin(psi);
-          psi += -1 * v * latency * (steering_angle/Lf);
-          //v   += throttle * latency_s;
+          double lat_m = v_ms * latency; // meters offset for given latency
           
-          v/=mph2mps;
+          //correction for transformation
+          /*
+          px  += lat_m* cos(psi);
+          py  += lat_m * sin(psi);
+          psi += lat_m/Lf * -steering_angle;
+          //v   += throttle * latency_s; // I don't like it
+          */
           
           //Map to Vehicle
           const unsigned point_num = ptsx.size();
@@ -133,15 +136,23 @@ int main() {
             coeff_d1[i-1] = coeff[i] * i;
           }
           
-          // add
-          double cte =  polyeval(coeff, px ); // fit for x = 0 ^_^
-          double epsi = -std::atan( polyeval(coeff_d1, px) ); // fit first derivate for x = 0
+          // reset to 0
+          px  = lat_m* cos(psi);
+          py  = lat_m * sin(psi);
+          psi = lat_m/Lf * -steering_angle;
+          
+          double cte0 =  coeff[0];
+          double epsi0 = psi-std::atan( coeff_d1[0] ); // fit first derivate for x = 0
+          
+          double cte = cte0 + lat_m * sin(epsi0);
+          double epsi = epsi0 + (lat_m/Lf) * -steering_angle;
+
           
           VectorXd state = VectorXd(6);
-          state << 0,0,0,v,cte,epsi;
+          state << px,py,psi,v,cte,epsi;
           auto values = mpc.Solve(state, coeff);
           
-          double steer_value = -values[0]/(deg2rad(25)*Lf);
+          double steer_value = -values[0]/(deg2rad(25) * Lf );
           double throttle_value = values[1];
 
           json msgJson;

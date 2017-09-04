@@ -12,7 +12,7 @@
 
 
 const size_t N = 10;
-const double dt = 0.15;
+const double dt = 0.20;
 
 const unsigned latency_ms = 100;
 const double ref_velocity = 100;
