@@ -105,15 +105,16 @@ int main() {
           double steering_angle = j[1]["steering_angle"];
           //double throttle = j[1]["throttle"]; // not quite accelleration but better than nothing...
           
-          double v_ms = v*mph2mps;
-          double latency = latency_s; // push it more in the future
-          double lat_m = v_ms * latency; // meters offset for given latency
+          const double v_ms = v*mph2mps;
+          const double latency = latency_s; // push it more in the future
+          const double lat_m = v_ms * latency; // meters offset for given latency
           
-          //correction for transformation
+          //latency correction for transformation
           
-          px  += lat_m* cos(psi);
+          
+          px  += lat_m * cos(psi);
           py  += lat_m * sin(psi);
-          psi += lat_m/Lf * -steering_angle;
+          psi += (lat_m/Lf) * -steering_angle;
           //v   += throttle * latency_s; // I don't like it
           
           
@@ -122,8 +123,8 @@ int main() {
           VectorXd xvals = VectorXd::Zero(point_num);
           VectorXd yvals = VectorXd::Zero(point_num);
           
-          double cos_psi = cos(-psi);
-          double sin_psi = sin(-psi);
+          const double cos_psi = cos(-psi);
+          const double sin_psi = sin(-psi);
           for (int i=0; i < point_num; i++ ){
             xvals(i)=  cos_psi * (ptsx[i] - px) - sin_psi * (ptsy[i] - py);
             yvals(i)=  sin_psi * (ptsx[i] - px) + cos_psi * (ptsy[i] - py);
@@ -131,7 +132,7 @@ int main() {
           
           // Polyfit
           // Deals better with longer dt, probably it would be better to have more points to interpolate, apparently is less likely to entangle
-          unsigned order = 4;
+          const unsigned order = 3;
           VectorXd coeff = polyfit(xvals, yvals, order);
           VectorXd coeff_d1 = VectorXd(coeff.size()-1);
           for(int i = 1;i<coeff.size();i++){
@@ -144,7 +145,7 @@ int main() {
           psi = (lat_m/Lf) * -steering_angle;
           
           double cte0 =  coeff[0];
-          double epsi0 = -std::atan( coeff_d1[0] ); // fit first derivate for x = 0
+          double epsi0 = psi-std::atan( coeff_d1[0] ); // fit first derivate for x = 0
           
           double cte = cte0 + lat_m * sin(epsi0);
           double epsi = epsi0 + (lat_m/Lf) * -steering_angle;

@@ -52,7 +52,7 @@ class FG_eval {
       // Minimize the value gap between sequential actuations.
       
       for (int t = 0; t < N - 2; t++) {
-        fg[0] += 50 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+        fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
         fg[0] += CppAD::pow(vars[acc_start + t + 1] - vars[acc_start + t], 2);
       }
       
@@ -104,17 +104,17 @@ class FG_eval {
           + coeffs[1] * x0
           + coeffs[2] * CppAD::pow(x0, 2)
           + coeffs[3] * CppAD::pow(x0, 3)
-          + coeffs[4] * CppAD::pow(x0, 4)
+          //+ coeffs[4] * CppAD::pow(x0, 4)
         );
         AD<double> psi = CppAD::atan(
             coeffs[1]
             + 2 * coeffs[2] * x0
             + 3 * coeffs[3] * CppAD::pow(x0, 2)
-            + 4 * coeffs[4] * CppAD::pow(x0, 3)
+            //+ 4 * coeffs[4] * CppAD::pow(x0, 3)
         );
         fg[2 + t + x_start]     = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
         fg[2 + t + y_start]     = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
-        fg[2 + t + psi_start]   = psi1 - (psi0 + (v0 * delta0 / Lf) * dt);
+        fg[2 + t + psi_start]   = psi1 - (psi0 + (v0/Lf) * delta0 * dt);
         fg[2 + t + v_start]     = v1 - (v0 + acc0 * dt);
         fg[2 + t + cte_start]   = cte1 - ((f - y0) + (v0 * CppAD::sin(epsi0) * dt));
         fg[2 + t + epsi_start]  = epsi1 - ((psi0 - psi) + (v0/Lf) * delta0 * dt);
@@ -255,7 +255,7 @@ vector<double> MPC::Solve(VectorXd state, VectorXd coeffs) {
   
   // Cost
   auto cost = solution.obj_value;
-  std::cout << "Cost:\n" << cost << std::endl;
+  //std::cout << "Cost:\n" << cost << std::endl;
   //std::cout << "X:\n" <<  << std::endl;
   //std::cout << "X:\n" <<  << std::endl;
   
