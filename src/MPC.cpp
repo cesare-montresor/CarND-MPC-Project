@@ -36,22 +36,27 @@ class FG_eval {
       
       // The part of the cost based on the reference state.
       for (int t = 0; t < N; t++) {
-        fg[0] += 1000*CppAD::pow(vars[cte_start + t], 2);
-        fg[0] += 500*CppAD::pow(vars[epsi_start + t], 2);
+        fg[0] += 4000*CppAD::pow(vars[cte_start + t], 2);
+        fg[0] += 3000*CppAD::pow(vars[epsi_start + t], 2);
         fg[0] += CppAD::pow(vars[v_start + t] - ref_velocity, 2);
       }
       
       // Minimize the use of actuators.
+      
       for (int t = 0; t < N - 1; t++) {
-        fg[0] += 20*CppAD::pow(vars[delta_start + t], 2);
-        fg[0] += 10*CppAD::pow(vars[acc_start + t], 2);
+        fg[0] += CppAD::pow(vars[delta_start + t], 2);
+        fg[0] += CppAD::pow(vars[acc_start + t], 2);
       }
       
+      
       // Minimize the value gap between sequential actuations.
+      
       for (int t = 0; t < N - 2; t++) {
-        fg[0] += 200 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-        fg[0] += 10 * CppAD::pow(vars[acc_start + t + 1] - vars[acc_start + t], 2);
+        fg[0] += 50 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+        fg[0] += CppAD::pow(vars[acc_start + t + 1] - vars[acc_start + t], 2);
       }
+      
+      
       
       
       //
@@ -94,24 +99,25 @@ class FG_eval {
         AD<double> acc0 = vars[acc_start + t];
         
         // Kinematic model
-        AD<double> f =
-          coeffs[0] +
-          coeffs[1] * x0 +
-          coeffs[2] * CppAD::pow(x0, 2) +
-          coeffs[3] * CppAD::pow(x0, 3) +
-          coeffs[4] * CppAD::pow(x0, 4);
+        AD<double> f = (
+          coeffs[0]
+          + coeffs[1] * x0
+          + coeffs[2] * CppAD::pow(x0, 2)
+          + coeffs[3] * CppAD::pow(x0, 3)
+          + coeffs[4] * CppAD::pow(x0, 4)
+        );
         AD<double> psi = CppAD::atan(
-            coeffs[1] +
-            2 * coeffs[2] * x0 +
-            3 * coeffs[3] * CppAD::pow(x0, 2) +
-            4 * coeffs[4] * CppAD::pow(x0, 3)
+            coeffs[1]
+            + 2 * coeffs[2] * x0
+            + 3 * coeffs[3] * CppAD::pow(x0, 2)
+            + 4 * coeffs[4] * CppAD::pow(x0, 3)
         );
         fg[2 + t + x_start]     = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
         fg[2 + t + y_start]     = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
-        fg[2 + t + psi_start]   = psi1 - (psi0 + v0 * delta0 / Lf * dt);
+        fg[2 + t + psi_start]   = psi1 - (psi0 + (v0 * delta0 / Lf) * dt);
         fg[2 + t + v_start]     = v1 - (v0 + acc0 * dt);
         fg[2 + t + cte_start]   = cte1 - ((f - y0) + (v0 * CppAD::sin(epsi0) * dt));
-        fg[2 + t + epsi_start]  = epsi1 - ((psi0 - psi) + v0 * delta0 / Lf * dt);
+        fg[2 + t + epsi_start]  = epsi1 - ((psi0 - psi) + (v0/Lf) * delta0 * dt);
       }
 
       
@@ -199,8 +205,8 @@ vector<double> MPC::Solve(VectorXd state, VectorXd coeffs) {
   // degrees (values in radians).
   // NOTE: Feel free to change this to something else.
   for (int i = delta_start; i < acc_start; i++) {
-    vars_lowerbound[i] = -0.436332; //Lf;
-    vars_upperbound[i] = 0.436332; //Lf;
+    vars_lowerbound[i] = -0.436332*Lf;
+    vars_upperbound[i] = 0.436332*Lf;
   }
   
   // Acceleration/decceleration upper and lower limits.
@@ -253,9 +259,15 @@ vector<double> MPC::Solve(VectorXd state, VectorXd coeffs) {
   //std::cout << "X:\n" <<  << std::endl;
   //std::cout << "X:\n" <<  << std::endl;
   
+  
+  
+  auto &sx = solution.x;
+  const double delta = (sx[delta_start]+sx[delta_start+1]+sx[delta_start+2])/3;
+  const double acc = (sx[acc_start]+sx[acc_start]+sx[acc_start+1]+sx[acc_start+2])/3;
+  
   vector<double> result;
-  result.push_back(solution.x[delta_start]);
-  result.push_back(solution.x[acc_start]);
+  result.push_back(delta);//solution.x[delta_start]);
+  result.push_back(acc); //solution.x[acc_start]);
   for (int i = 0; i < N - 1; i++) {
     result.push_back(solution.x[x_start + i + 1]);
     result.push_back(solution.x[y_start + i + 1]);

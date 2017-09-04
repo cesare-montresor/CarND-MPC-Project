@@ -94,7 +94,7 @@ int main() {
         auto j = json::parse(s);
         string event = j[0].get<string>();
         if (event == "telemetry") {
-          cout<<"vars: \n"<<j[1]<<"\n";
+          //cout<<"vars: \n"<<j[1]<<"\n";
           // j[1] is the data JSON object
           vector<double> ptsx = j[1]["ptsx"];
           vector<double> ptsy = j[1]["ptsy"];
@@ -106,16 +106,16 @@ int main() {
           //double throttle = j[1]["throttle"]; // not quite accelleration but better than nothing...
           
           double v_ms = v*mph2mps;
-          double latency = latency_s * 2; // push it more in the future
+          double latency = latency_s; // push it more in the future
           double lat_m = v_ms * latency; // meters offset for given latency
           
           //correction for transformation
-          /*
+          
           px  += lat_m* cos(psi);
           py  += lat_m * sin(psi);
           psi += lat_m/Lf * -steering_angle;
           //v   += throttle * latency_s; // I don't like it
-          */
+          
           
           //Map to Vehicle
           const unsigned point_num = ptsx.size();
@@ -130,7 +130,9 @@ int main() {
           }
           
           // Polyfit
-          VectorXd coeff = polyfit(xvals, yvals, 4);
+          // Deals better with longer dt, probably it would be better to have more points to interpolate, apparently is less likely to entangle
+          unsigned order = 4;
+          VectorXd coeff = polyfit(xvals, yvals, order);
           VectorXd coeff_d1 = VectorXd(coeff.size()-1);
           for(int i = 1;i<coeff.size();i++){
             coeff_d1[i-1] = coeff[i] * i;
@@ -139,10 +141,10 @@ int main() {
           // reset to 0
           px  = lat_m* cos(psi);
           py  = lat_m * sin(psi);
-          psi = lat_m/Lf * -steering_angle;
+          psi = (lat_m/Lf) * -steering_angle;
           
           double cte0 =  coeff[0];
-          double epsi0 = psi-std::atan( coeff_d1[0] ); // fit first derivate for x = 0
+          double epsi0 = -std::atan( coeff_d1[0] ); // fit first derivate for x = 0
           
           double cte = cte0 + lat_m * sin(epsi0);
           double epsi = epsi0 + (lat_m/Lf) * -steering_angle;
@@ -152,7 +154,7 @@ int main() {
           state << px,py,psi,v,cte,epsi;
           auto values = mpc.Solve(state, coeff);
           
-          double steer_value = -values[0]/(deg2rad(25) * Lf );
+          double steer_value = -values[0]/deg2rad(25);
           double throttle_value = values[1];
 
           json msgJson;
