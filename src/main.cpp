@@ -103,20 +103,13 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
           double steering_angle = j[1]["steering_angle"];
-          //double throttle = j[1]["throttle"]; // not quite accelleration but better than nothing...
+          double throttle = j[1]["throttle"]; // not quite accelleration but better than nothing...
           
           const double v_ms = v*mph2mps;
           const double latency = latency_s; // push it more in the future
           const double lat_m = v_ms * latency; // meters offset for given latency
           
           //latency correction for transformation
-          
-          /*
-          px  += lat_m * cos(psi);
-          py  += lat_m * sin(psi);
-          psi += (lat_m/Lf) * -steering_angle;
-          //v   += throttle * latency_s; // I don't like it
-          */
           
           //Map to Vehicle
           const unsigned point_num = ptsx.size();
@@ -139,17 +132,21 @@ int main() {
             coeff_d1[i-1] = coeff[i] * i;
           }
           
+          
+          
+          double cte0 =  coeff[0]; // fit first derivate for x = 0
+          double epsi0 = -std::atan( coeff_d1[0] ); // fit first derivate for x = 0
+          
           // reset to 0
           px  = lat_m* cos(psi);
           py  = lat_m * sin(psi);
           psi = (lat_m/Lf) * -steering_angle;
           
-          double cte0 =  coeff[0];
-          double epsi0 = psi-std::atan( coeff_d1[0] ); // fit first derivate for x = 0
           
-          double cte = cte0 + lat_m * sin(epsi0);
-          double epsi = epsi0 + (lat_m/Lf) * -steering_angle;
-
+          double epsi = epsi0 + psi;
+          double cte= cte0 + lat_m*sin(epsi);
+          v = v + throttle*latency;
+          
           
           VectorXd state = VectorXd(6);
           state << px,py,psi,v,cte,epsi;
