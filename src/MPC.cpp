@@ -104,13 +104,11 @@ class FG_eval {
           + coeffs[1] * x0
           + coeffs[2] * CppAD::pow(x0, 2)
           + coeffs[3] * CppAD::pow(x0, 3)
-          //+ coeffs[4] * CppAD::pow(x0, 4)
         );
         AD<double> psi = CppAD::atan(
             coeffs[1]
             + 2 * coeffs[2] * x0
             + 3 * coeffs[3] * CppAD::pow(x0, 2)
-            //+ 4 * coeffs[4] * CppAD::pow(x0, 3)
         );
         fg[2 + t + x_start]     = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
         fg[2 + t + y_start]     = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
@@ -266,8 +264,8 @@ vector<double> MPC::Solve(VectorXd state, VectorXd coeffs) {
   const double acc = (sx[acc_start]+sx[acc_start]+sx[acc_start+1]+sx[acc_start+2])/3;
   
   vector<double> result;
-  result.push_back(delta);//solution.x[delta_start]);
-  result.push_back(acc); //solution.x[acc_start]);
+  result.push_back(delta);
+  result.push_back(acc);
   for (int i = 0; i < N - 1; i++) {
     result.push_back(solution.x[x_start + i + 1]);
     result.push_back(solution.x[y_start + i + 1]);

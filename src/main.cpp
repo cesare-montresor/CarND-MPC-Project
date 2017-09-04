@@ -111,12 +111,12 @@ int main() {
           
           //latency correction for transformation
           
-          
+          /*
           px  += lat_m * cos(psi);
           py  += lat_m * sin(psi);
           psi += (lat_m/Lf) * -steering_angle;
           //v   += throttle * latency_s; // I don't like it
-          
+          */
           
           //Map to Vehicle
           const unsigned point_num = ptsx.size();
